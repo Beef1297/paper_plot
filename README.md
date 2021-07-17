@@ -12,7 +12,10 @@
 - 箱ひげ図 (boxplot)
     - https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.boxplot.html
 - 棒グラフ (bar)
-    - 
+    - barh: https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.barh.html#matplotlib.pyplot.barh
+    - bar: https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.bar.html#matplotlib.pyplot.bar
+- 散布図 (scatter)
+    - https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.scatter.html
 
 ## Tips: matplotlib について理解する
 
