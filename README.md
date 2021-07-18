@@ -23,6 +23,10 @@
     - **props は ax.set() に渡しています
     - https://matplotlib.org/stable/api/axes_api.html
     - ドキュメントにある **kwargs にあるものを設定可能です
+- 基本的に axes の設定ドキュメントにあるプロパティ
+    - https://matplotlib.org/stable/api/axes_api.html
+- labelなどのテキストの設定は matplotlib.text() に使えるパラメータが設定可能です
+    - https://matplotlib.org/stable/api/text_api.html#matplotlib.text.Text
 
 ## Tips: フォント設定について
 
