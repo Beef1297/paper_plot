@@ -1,8 +1,9 @@
-# Paper Plot
+# Paper Plot (WIP)
 
-- Work in Progress
 - matplotlib や seaborn のメソッドのラッパー
 - 論文に載せるグラフを簡単に作れるために細かい設定を避けるために作成
+
+
 
 ## props
 
@@ -16,6 +17,23 @@
     - bar: https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.bar.html#matplotlib.pyplot.bar
 - 散布図 (scatter)
     - https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.scatter.html
+
+- axes の設定
+    - set_axes_parameters では ticker や locator, label を設定します
+    - **props は ax.set() に渡しています
+    - https://matplotlib.org/stable/api/axes_api.html
+    - ドキュメントにある **kwargs にあるものを設定可能です
+
+## Tips: フォント設定について
+
+- matplotlib にフォントを追加したい
+    - https://ricrowl.hatenablog.com/entry/2020/09/14/032424
+
+## Tips: スタイルについて
+
+- 細かい調整をせずにデフォルトのスタイルを変更することで見た目を変更可能です
+    - https://qiita.com/eriksoon/items/b93030ba4dc686ecfbba
+    - https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html
 
 ## Tips: matplotlib について理解する
 
@@ -36,5 +54,8 @@ plt.xticks(rotation=XXX) or plt.yticks(rotation=XXX)
 # axes を使う場合
 ax.tick_params(axis='x', labelrotation=XXX)
 ax.tick_params(axis='y', labelrotation=XXX)
+or
+ax.set_xticklabels(xticklabels, rotation=XXX) # labelを必ず渡す必要がある
+ax.set_yticklabels(yticklabels, rotation=XXX) # labelを必ず渡す必要がある
 ```
 

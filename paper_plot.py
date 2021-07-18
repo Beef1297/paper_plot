@@ -25,16 +25,14 @@ fp_jp = fm.FontProperties(fname=r'C:\WINDOWS\Fonts\msgothic.ttc', size=14)
 fp_en = fm.FontProperties(fname=r'C:\WINDOWS\Fonts\times.ttf', size=8)
 fp_b_century = fm.FontProperties(fname=r"C:\WINDOWS\Fonts\CENTURY.TTF", weight="bold")
     
-def initialize(lang="en", figsize=(5, 5), style="seaborn-paper", **kwargs) :
+def initialize(figsize=(5, 5), font_family="Arial", style="seaborn-paper", **kwargs) :
     """全般的な設定を行う関数
-        * フォントの設定
+        * フォントの設定: 細かくフォントを設定するのは大変なので日本語か，英語フォントを適当に設定しイラレなどで修正する方針
         * pdf.fonttype の設定
         * tick や grid などの設定
         * fig を返す
     """
-    # matplotlib で利用できるフォントを利用 (日本語未対応)
-    name, index = search_font_from_rcparams(font="Arial")
-    plt.rcParams['font.family'] = plt.rcParams[name][index]
+    plt.rcParams["font.family"] = font_family
 
     # pdf で書き出した際にフォントが埋め込まれるようにする
     plt.rcParams["pdf.fonttype"] = 42 # TrueType
@@ -73,6 +71,16 @@ def print_stylelist() :
     print("This is a list of available styles: {}".format(plt.style.available))
     return plt.style.available
 
+def print_example_fonts() :
+    print(
+        """
+examples of available fonts 
+(English) Times New Roman, Arial
+Windows (Japanese): Yu Gothic, Yu Mincho
+Mac (Japanese): Hiragino Maru Gothic Pro, Hiragino Mincho ProN
+        """
+    )
+
 def search_systemfont_list(keyword="gothic") :
     """利用可能なシステムフォントのパスを返す
     * 全て表示すると可視性が悪いので，キーワードとマッチしたものを返す
@@ -82,30 +90,26 @@ def search_systemfont_list(keyword="gothic") :
     print(extract)
     return extract
 
-def search_font_from_rcparams(font="Arial") :
+def search_font_from_matplotlib(font="Arial") :
     """matplotlib から設定可能なフォントの名前を返す
     * システムフォントではなく matplotlib rcParams にあるフォントから探索
     * rcparams のkey と index を返す
     """
-    keys = ["font.cursive", "font.fantasy", "font.monospace",
-            "font.sans-serif", "font.serif"]
-    key = "font.sans-serif"
-    index = 0
+    font_list = fm.get_fontconfig_fonts()
+    names = [fm.FontProperties(fname=fname).get_name() for fname in font_list]
+    match_names = []
+    for i, name in enumerate(names):
+        if re.match(".*{}.*".format(font), name):
+            match_names.append(name)
 
-    for k in keys:
-        for i, name in enumerate(plt.rcParams[k]):
-            if re.match(".*{}.*".format(font), name):
-                key = k
-                index = i
-                break
-
-    return (key, index)
+    return match_names
 
 
 def set_axes_params(fig, ax, ylabel="ylabel", xlabel="xlabel",
                     xmaj_ticker=None, xmin_ticker=None,
                     ymaj_ticker=None, ymin_ticker=None,
-                    xtick_label=None, xtickrotation=0, ticklabelsize=11,
+                    xtick_label=None, ytick_label=None,
+                    ticklabelsize=11, labelsize=18,
                    **props) :
     """軸の設定を行う関数
     * 枠線やグリッド，フォントサイズ，locatorやtickerをプロットした後に調整する
@@ -137,6 +141,8 @@ def set_axes_params(fig, ax, ylabel="ylabel", xlabel="xlabel",
 
     if xtick_label:
         ax.set_xticklabels(labels=xtick_label)
+    if ytick_label:
+        ax.set_yticklabels(labels=ytick_label)
 
     # ticker がずれるときは手動で設定すると上手くいく時がある
 #         ax.set_xticks(np.arange(xrange[0], xrange[1]+xrange[2], xrange[2]))
@@ -146,8 +152,9 @@ def set_axes_params(fig, ax, ylabel="ylabel", xlabel="xlabel",
     # TODO: label サイズとかは設定を分けたほうがいい
     ax.tick_params(axis='x', labelsize=ticklabelsize, width=0.5)
     ax.tick_params(axis='y', labelsize=ticklabelsize, width=0.5)
-    ax.set_xlabel(xlabel, fontsize=18)
-    ax.set_ylabel(ylabel, fontsize=18)
+    ax.set_xlabel(xlabel, fontsize=labelsize)
+    ax.set_ylabel(ylabel, fontsize=labelsize)
+    ax.set(**props)
 
     # 余白の設定
     margin=[0.075, 0.95, 0.20, 1]
