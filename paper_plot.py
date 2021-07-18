@@ -18,12 +18,6 @@ import matplotlib.font_manager as fm
 
 # 散布図の中で単回帰分析する用
 from sklearn import linear_model
-
-# WIP: フォントをもっと柔軟に選択できるようにする
-# フォントプロパティを渡すようにした方がいいかな
-fp_jp = fm.FontProperties(fname=r'C:\WINDOWS\Fonts\msgothic.ttc', size=14)
-fp_en = fm.FontProperties(fname=r'C:\WINDOWS\Fonts\times.ttf', size=8)
-fp_b_century = fm.FontProperties(fname=r"C:\WINDOWS\Fonts\CENTURY.TTF", weight="bold")
     
 def initialize(figsize=(5, 5), font_family="Arial", style="seaborn-paper", **kwargs) :
     """全般的な設定を行う関数
