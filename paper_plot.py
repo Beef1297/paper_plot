@@ -40,16 +40,18 @@ def initialize(figsize=(5, 5), font_family="Arial", style="seaborn-paper", **kwa
     # 大元のスタイルを変更して，細かい部分を調整
     plt.style.use(style)
     _props = {
-        "axes.grid": True,
-        "grid.linestyle": '-',
-        "xtick.direction": 'in',
-        "ytick.direction": 'in',
-        "xtick.top": False,
-        "ytick.right": False,
-        "xtick.bottom": True,
-        "ytick.left": True,
-        "axes.linewidth": 1.0,
-        "axes.axisbelow": True
+        "axes.grid": True, # グラフのグリッド線の表示
+        "grid.linestyle": '-', # グリッドの線のスタイル
+        "grid.color": "0.8", # 0~1.0 の数値を文字列として渡すとグレースケールとして設定可能
+        "xtick.direction": 'in', # x軸の tick (目盛り) の方向をグラフの内側に 'out' にすると外側
+        "ytick.direction": 'in', # y軸の tick の方向を内側に
+        "xtick.top": False, # 上側の目盛りは表示しない
+        "ytick.right": False, # 右側の目盛りは表示しない
+        "xtick.bottom": True, # 下側の目盛りを表示する
+        "ytick.left": True, # 左側の目盛りを表示する
+        "axes.linewidth": 1.0, # グラフの枠線の太さ
+        "axes.edgecolor": "0.3", # 0~1.0 の数値を文字列として渡すとグレースケールとして設定可能
+        "axes.axisbelow": True # axis と tick の表示順について (True: 両方とも他の要素の下に)
     }
     custom_props = {**_props, **kwargs}
     # パラメータを更新
@@ -63,6 +65,15 @@ def create_new_axis(fig, id) :
     """
     ax = fig.add_subplot(id)
     return ax
+
+def check_setting_matplotlib(key) :
+    params = plt.rcParams
+    print("check parameters (rcParams) including '{}' ------".format(key))
+    for k, v in params.items() :
+        if re.search(key, k) :
+            print("{0}: {1}".format(k, v))
+    
+            
 
 def print_stylelist() :
     """デフォルトで利用可能なグラフのスタイルリストを表示する
@@ -140,9 +151,9 @@ def set_axes_params(fig, ax, ylabel="ylabel", xlabel="xlabel",
         ax.xaxis.set_major_locator(ticker.AutoLocator())
 
     if xtick_label:
-        ax.set_xticklabels(labels=xtick_label)
+        ax.xaxis.set_major_locator(ticker.FixedLocator(xtick_label))
     if ytick_label:
-        ax.set_yticklabels(labels=ytick_label)
+        ax.yaxis.set_major_locator(ticker.FixedLocator(ytick_label))
 
     # ticker がずれるときは手動で設定すると上手くいく時がある
 #         ax.set_xticks(np.arange(xrange[0], xrange[1]+xrange[2], xrange[2]))
@@ -308,9 +319,7 @@ def boxplot(ax, tdata, pattern_label, **props) :
             )
 
     _p = {**_default_props, **props}
-    ax.boxplot(tdata,
-        **_p
-    )
+    ax.boxplot(tdata,**_p)
 
     return
 
