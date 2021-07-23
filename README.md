@@ -50,6 +50,19 @@
 - ticker や locator の設定について
     - このサンプルが分かりやすいです
     - https://matplotlib.org/3.1.1/gallery/ticks_and_spines/tick-locators.html
+    - https://sabopy.com/py/matplotlib-12/#toc9
+    - NullLocator()
+        - 軸目盛を非表示にする
+    - MultipleLocator()
+        - 目盛りの変化していく量 (2.0ずつ，など) を指定する
+    - FixedLocator()
+        - 表示する目盛りをリストで直接指定する
+    - LinearLocator()
+        - 目盛りの個数を指定する
+    - IndexLocator()
+        - offset と base (間隔) の値を設定して，始点と間隔を指定
+    - AutoLocator()
+        - 自動設定
 - 軸ラベルを回転させたい
     - https://www.delftstack.com/ja/howto/matplotlib/how-to-rotate-x-axis-tick-label-text-in-matplotlib/
 

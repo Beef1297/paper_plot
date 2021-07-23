@@ -43,6 +43,10 @@ def initialize(figsize=(5, 5), font_family="Arial", style="seaborn-paper", **kwa
         "ytick.right": False, # 右側の目盛りは表示しない
         "xtick.bottom": True, # 下側の目盛りを表示する
         "ytick.left": True, # 左側の目盛りを表示する
+        "xtick.major.size": 7.0,
+        "xtick.minor.size": 4.0,
+        "ytick.major.size": 7.0,
+        "ytick.minor.size": 4.0,
         "axes.linewidth": 1.0, # グラフの枠線の太さ
         "axes.edgecolor": "0.3", # 0~1.0 の数値を文字列として渡すとグレースケールとして設定可能
         "axes.axisbelow": True # axis と tick の表示順について (True: 両方とも他の要素の下に)
@@ -111,6 +115,8 @@ def search_font_from_matplotlib(font="Arial") :
 
 
 def set_axes_params(fig, ax, ylabel="ylabel", xlabel="xlabel",
+                    xmajtick_num=None, ymajtick_num=None,
+                    xmintick_num=None, ymintick_num=None,
                     xmaj_ticker=None, xmin_ticker=None,
                     ymaj_ticker=None, ymin_ticker=None,
                     xtick_label=None, ytick_label=None,
@@ -128,7 +134,7 @@ def set_axes_params(fig, ax, ylabel="ylabel", xlabel="xlabel",
     if ymin_ticker is not None:
         ax.yaxis.set_minor_locator(ymin_ticker)
     else:
-        ax.yaxis.set_minor_locator(ticker.AutoLocator())
+        ax.yaxis.set_minor_locator(ticker.AutoMinorLocator())
 
     # TODO: ticker を渡すようにして設定できるようにする．
     ax.xaxis.set_major_formatter(plt.FormatStrFormatter('%.1f'))
@@ -137,7 +143,7 @@ def set_axes_params(fig, ax, ylabel="ylabel", xlabel="xlabel",
     if xmin_ticker is not None:
         ax.xaxis.set_minor_locator(xmin_ticker)
     else:
-        ax.xaxis.set_minor_locator(ticker.AutoLocator())
+        ax.xaxis.set_minor_locator(ticker.AutoMinorLocator())
 
     if xmaj_ticker is not None:
         ax.xaxis.set_major_locator(xmaj_ticker)
@@ -146,8 +152,20 @@ def set_axes_params(fig, ax, ylabel="ylabel", xlabel="xlabel",
 
     if xtick_label:
         ax.xaxis.set_major_locator(ticker.FixedLocator(xtick_label))
+#         ax.xaxis.set_major_locator(ticker.MaxNLocator(len(xtick_label)))
     if ytick_label:
         ax.yaxis.set_major_locator(ticker.FixedLocator(ytick_label))
+#         ax.yaxis.set_major_locator(ticker.MaxNLocator(len(ytick_label)))
+
+    if xmajtick_num:
+        ax.xaxis.set_major_locator(ticker.LinearLocator(xmajtick_num))
+    if ymajtick_num:
+        ax.yaxis.set_major_locator(ticker.LinearLocator(ymajtick_num))
+    
+    if xmintick_num:
+        ax.xaxis.set_minor_locator(ticker.LinearLocator(xmintick_num))
+    if ymintick_num:
+        ax.yaxis.set_minor_locator(ticker.LinearLocator(ymintick_num))
 
     # ticker がずれるときは手動で設定すると上手くいく時がある
 #         ax.set_xticks(np.arange(xrange[0], xrange[1]+xrange[2], xrange[2]))
