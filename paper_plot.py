@@ -7,19 +7,23 @@ Todo:
 
 """
 
+# データ処理に使うライブラリ
 import os
 import numpy as np
 import re
+from sklearn import linear_model # 散布図の中で単回帰分析する用
+import pandas as pd
+from typing import Tuple
+
+# 描画系のライブラリ
+import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
-from matplotlib.image import BboxImage, imread
-from matplotlib.transforms import Bbox, TransformedBbox
+# from matplotlib.image import BboxImage, imread
+# from matplotlib.transforms import Bbox, TransformedBbox
 import matplotlib.font_manager as fm
 
-# 散布図の中で単回帰分析する用
-from sklearn import linear_model
-    
-def initialize(figsize=(5, 5), font_family="Arial", style="seaborn-paper", **kwargs) :
+def initialize(figsize: Tuple[int, int] = (5, 5), font_family: str = "Arial", style: str = "seaborn-paper", **kwargs) -> matplotlib.pyplot.figure: 
     """全般的な設定を行う関数
         * フォントの設定: 細かくフォントを設定するのは大変なので日本語か，英語フォントを適当に設定しイラレなどで修正する方針
         * pdf.fonttype の設定
@@ -58,13 +62,17 @@ def initialize(figsize=(5, 5), font_family="Arial", style="seaborn-paper", **kwa
 
     return fig
 
-def create_new_axis(fig, id) :
+def create_new_axis(fig: plt.figure, id: int) -> matplotlib.axes.SubplotBase :
     """新しいaxisを作成する関数
     """
     ax = fig.add_subplot(id)
     return ax
 
-def check_setting_matplotlib(key) :
+def add_new_axis(fig: plt.figure, rect:Tuple[float, float, float, float]) -> matplotlib.axes.SubplotBase :
+    ax = fig.add_axes(rect)
+    return ax
+
+def check_setting_matplotlib(key: str) :
     params = plt.rcParams
     print("check parameters (rcParams) including '{}' ------".format(key))
     for k, v in params.items() :
@@ -73,7 +81,7 @@ def check_setting_matplotlib(key) :
     
             
 
-def print_stylelist() :
+def print_stylelist() -> list:
     """デフォルトで利用可能なグラフのスタイルリストを表示する
     * 詳しくは web へ
     """
@@ -90,7 +98,7 @@ Mac (Japanese): Hiragino Maru Gothic Pro, Hiragino Mincho ProN
         """
     )
 
-def search_systemfont_list(keyword="gothic") :
+def search_systemfont_list(keyword="gothic") -> list:
     """利用可能なシステムフォントのパスを返す
     * 全て表示すると可視性が悪いので，キーワードとマッチしたものを返す
     """
@@ -99,7 +107,7 @@ def search_systemfont_list(keyword="gothic") :
     print(extract)
     return extract
 
-def search_font_from_matplotlib(font="Arial") :
+def search_font_from_matplotlib(font: str ="Arial") -> list :
     """matplotlib から設定可能なフォントの名前を返す
     * システムフォントではなく matplotlib rcParams にあるフォントから探索
     * rcparams のkey と index を返す
@@ -114,13 +122,16 @@ def search_font_from_matplotlib(font="Arial") :
     return match_names
 
 
-def set_axes_params(fig, ax, ylabel="ylabel", xlabel="xlabel",
-                    xmajtick_num=None, ymajtick_num=None,
-                    xmintick_num=None, ymintick_num=None,
-                    xmaj_ticker=None, xmin_ticker=None,
-                    ymaj_ticker=None, ymin_ticker=None,
-                    xtick_label=None, ytick_label=None,
-                    ticklabelsize=11, labelsize=18,
+def set_axes_params(fig: plt.figure, ax: matplotlib.axes.SubplotBase,
+                    ylabel: str = "ylabel", xlabel: str = "xlabel",
+                    xmajtick_num: int = None, ymajtick_num: int = None,
+                    xmintick_num: int = None, ymintick_num: int = None,
+                    xmaj_ticker: matplotlib.ticker.Locator = None,
+                    xmin_ticker: matplotlib.ticker.Locator = None,
+                    ymaj_ticker: matplotlib.ticker.Locator = None,
+                    ymin_ticker: matplotlib.ticker.Locator = None,
+                    xtick_label: str = None, ytick_label: str = None,
+                    ticklabelsize: int = 11, labelsize: int = 18,
                    **props) :
     """軸の設定を行う関数
     * 枠線やグリッド，フォントサイズ，locatorやtickerをプロットした後に調整する
@@ -186,7 +197,7 @@ def set_axes_params(fig, ax, ylabel="ylabel", xlabel="xlabel",
     return
 
 
-def plot_data(ax, x, datas, labels=None, **props) :
+def plot_data(ax: matplotlib.axes.SubplotBase, x: list, datas: list, labels: list = None, **props) :
     """データを直線でプロットしていく関数
     """
     for i in range(0, len(datas)) :
@@ -195,7 +206,7 @@ def plot_data(ax, x, datas, labels=None, **props) :
     return
 
 # TODO: hatch の取り扱い (どうしても引数が多くなる)
-def fill_between(ax, x, upper_edge, lower_edge, hatch_fill=None, **props) :
+def fill_between(ax: matplotlib.axes.SubplotBase, x: list, upper_edge: list, lower_edge: list, hatch_fill: bool = None, **props) :
     """指定領域を塗りつぶす関数
     """
     hatches = cycle(["/", "\\"])
@@ -206,11 +217,11 @@ def fill_between(ax, x, upper_edge, lower_edge, hatch_fill=None, **props) :
         _p = {**_default_props, **props}
         if (hatch_fill) :
             _hatch = next(hatches)
-            poly_collection = ax.fill_between(x, pse, mse, hatch=_hatch, **_p)
+            poly_collection = ax.fill_between(x, upper_edge, lower_edge, hatch=_hatch, **_p)
         else :
-            ax.fill_between(x, pse, mse, **_p)
+            ax.fill_between(x, upper_edge, lower_edge, **_p)
 
-def bar(ax, x_pos, y, sd=None, vertical=True, **props) :
+def bar(ax: matplotlib.axes.SubplotBase, x_pos: list, y: list, sd: list = None, vertical: bool = True, **props) :
     """棒グラフをプロットする関数
     エラーバーも設定できるようにすべきか
     縦棒グラフの幅を設定する時は "width", 横棒グラフの幅を設定する時は "height"
@@ -232,7 +243,7 @@ def bar(ax, x_pos, y, sd=None, vertical=True, **props) :
         ax.barh(x_pos, y, **props)
     return
 
-def errorbar(ax, xpos, y, yerr, **props) :
+def errorbar(ax: matplotlib.axes.SubplotBase, xpos: list, y: list, yerr: list, **props) :
     """エラーバーを別途プロットする関数
     x, y座標が必要になるので二度手間ではある
     """
@@ -248,7 +259,7 @@ def errorbar(ax, xpos, y, yerr, **props) :
     ax.errorbar(x_pos, y, yerr=sd, **_p)
 
 
-def scatter(ax, x, y, **props) :
+def scatter(ax: matplotlib.axes.SubplotBase, x: list, y: list, **props) :
     """散布図をプロットする関数
     color や marker の候補を記載しておく
     """
@@ -277,7 +288,7 @@ def scatter(ax, x, y, **props) :
 
     return
 
-def regression(ax, x, y, **props) :
+def regression(ax: matplotlib.axes.SubplotBase, x: list, y: list, **props) :
     """回帰直線をプロットする関数
     # データに対して回帰直線を引く関数. scatter との併用を想定
     # データは二次元配列で渡す
@@ -303,7 +314,7 @@ def regression(ax, x, y, **props) :
     ax.plot(X, reg.predict(X), **_p)
     return
 
-def boxplot(ax, tdata, pattern_label, **props) :
+def boxplot(ax: matplotlib.axes.SubplotBase, tdata: list, pattern_label=None, **props) :
     """箱ひげ図をプロットする関数
     meanpointprops: 平均値を表す点のプロパティ
     meanlineprops: 平均値を線で表す時のプロパティ
@@ -345,7 +356,7 @@ def display_process() :
     plt.tight_layout()
     return
 
-def save(fig, path, dpi=450) :
+def save(fig: plt.figure, path: str, dpi: int = 450) :
     """グラフを保存する処理
     重複の確認を行い，上書きを防止する
     """
