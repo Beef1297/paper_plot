@@ -5,11 +5,29 @@
     - 細かい設定を避けられるようにしたい
     - ただ，どうしても細かく調整したいところがでてくるので，そこをサポートできるようにしたい
 
+## 使用例
+
+```python
+from paper_plot import paper_plot as pplt
+import seaborn as sns
+
+fmri = sns.load_dataset("fmri")
+fig = pplt.initialize(font_family="Arial")
+ax1 = pplt.create_new_axis(fig, 111)
+pplt.scatter(ax1, fmri["timepoint"], fmri["signal"])
+# pplt.bar(ax1, fmri["timepoint"], fmri["signal"])
+pplt.set_axes_params(
+    fig, ax1,xlabel="timepoint", ylabel="signal",
+    ticklabelsize=15, **{"ylim": (-1.0, 1.0)})
+pplt.display_process()
+# pp.save("sample.png")
+```
+
 ## props
 
 - 各関数は辞書型配列を props として渡すことができます
-- これによって，各グラフの細かいパラメータをカスタマイズ可能です
-- 渡すことのできるパラメータについては各グラフのドキュメントに記載されている引数です
+  - 例えば，上の使用例では `**{~~~}` で辞書型配列を `set_axes_params` に渡しています
+- これによって，各グラフの細かいパラメータをカスタマイズ可能です．渡すことのできるパラメータについては各グラフのドキュメントに記載されている引数です
 - 箱ひげ図 (boxplot)
     - https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.boxplot.html
 - 棒グラフ (bar)
