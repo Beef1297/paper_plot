@@ -23,6 +23,8 @@ pplt.display_process()
 # pp.save("sample.png")
 ```
 
+- グラフのフォントはこのライブラリでは細かい設定はせずに，フォントを埋め込んだ状態でpdfに書き出しAdobe illustratorなどでフォントを調整する方法を推奨します．
+
 ## props
 
 - 各関数は辞書型配列を props として渡すことができます
