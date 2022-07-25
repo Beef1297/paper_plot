@@ -2,6 +2,24 @@
 
 - 自分で設定を調整する際に，手がかりになれば良いなと思い参考になりそうな情報やサイトを記載する
 
+## Seaborn について
+
+- https://blog.amedama.jp/entry/seaborn-plot
+- Axes について
+  - https://qiita.com/risuoku/items/d3b3eaf917a934a0e770
+
+### seaborn.barplot
+
+- 棒グラフをプロット
+- http://seaborn.pydata.org/generated/seaborn.barplot.html#seaborn.barplot
+- ここで紹介されているパラメータに加えて， axes.Axes.bar のkwargsにあるパラメータをkwargsを通して指定できる
+  - https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.bar.html#matplotlib.axes.Axes.bar
+  - 
+
+- あるcolを使って複数のグラフに分割するとき
+  - catplot と kind="bar" を組み合わせることでプロットする
+  - 
+
 ## props
 
 - 各関数は辞書型配列を props として渡すことができます

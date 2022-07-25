@@ -22,6 +22,9 @@ import matplotlib.ticker as ticker
 # from matplotlib.image import BboxImage, imread
 # from matplotlib.transforms import Bbox, TransformedBbox
 import matplotlib.font_manager as fm
+import seaborn as sns
+
+from data import Data
 
 def initialize(figsize: Tuple[int, int] = (5, 5), font_family: str = "Arial", style: str = "seaborn-paper", **kwargs) -> matplotlib.pyplot.figure: 
     """全般的な設定を行う関数
@@ -59,16 +62,17 @@ def initialize(figsize: Tuple[int, int] = (5, 5), font_family: str = "Arial", st
     # パラメータを更新
     plt.rcParams.update(**custom_props)
     fig = plt.figure(figsize=figsize)
+    ax = create_new_axis(fig, 111)
+    
+    return fig, ax
 
-    return fig
-
-def create_new_axis(fig: plt.figure, id: int) -> matplotlib.axes.SubplotBase :
+def create_new_axis(fig: plt.figure, id: int) -> "axes" :
     """新しいaxisを作成する関数
     """
     ax = fig.add_subplot(id)
     return ax
 
-def add_new_axis(fig: plt.figure, rect:Tuple[float, float, float, float]) -> matplotlib.axes.SubplotBase :
+def add_new_axis(fig: plt.figure, rect:Tuple[float, float, float, float]) -> "axes" :
     ax = fig.add_axes(rect)
     return ax
 
@@ -122,82 +126,163 @@ def search_font_from_matplotlib(font: str ="Arial") -> list :
     return match_names
 
 
-def set_axes_params(fig: plt.figure, ax: matplotlib.axes.SubplotBase,
-                    ylabel: str = "ylabel", xlabel: str = "xlabel",
-                    xmajtick_num: int = None, ymajtick_num: int = None,
-                    xmintick_num: int = None, ymintick_num: int = None,
-                    xmaj_ticker: matplotlib.ticker.Locator = None,
-                    xmin_ticker: matplotlib.ticker.Locator = None,
-                    ymaj_ticker: matplotlib.ticker.Locator = None,
-                    ymin_ticker: matplotlib.ticker.Locator = None,
-                    xtick_label: str = None, ytick_label: str = None,
-                    ticklabelsize: int = 11, labelsize: int = 18,
+
+def arrange_yaxis(ax: "axes", data: Data,
+                  formatter: matplotlib.ticker.Formatter = None,
+                  major_locator: matplotlib.ticker.Locator = None,
+                  minor_locator: matplotlib.ticker.Locator = None,
+                  tick_interval = None,
+                  **props) :
+    """
+    # y軸の設定をする
+    # ラベルの表記
+    # Tickの数
+    """
+    # formatter により目盛りのラベルの「見た目」を決める
+    # データの型によって自動的に変更する
+    y_type = data.get_yaxis_type()
+    if ("int" in y_type) :
+        # int 型のデータの場合
+        ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%d'))
+        
+        if tick_interval :
+            ax.yaxis.set_minor_locator(ticker.AutoMinorLocator())
+            ax.yaxis.set_major_locator(ticker.MultipleLocator(tick_interval))
+        else :
+            ax.yaxis.set_minor_locator(ticker.AutoMinorLocator())
+            ax.yaxis.set_major_locator(ticker.AutoLocator())
+
+    if ("float" in y_type) :
+        ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%.3f'))
+        # TODO: 小数点の桁数も設定できた方が便利か
+
+        if tick_interval :
+            ax.yaxis.set_minor_locator(ticker.AutoMinorLocator())
+            ax.yaxis.set_major_locator(ticker.MultipleLocator(tick_interval))
+        else :
+            ax.yaxis.set_minor_locator(ticker.AutoMinorLocator())
+            ax.yaxis.set_major_locator(ticker.AutoLocator())
+    
+
+    
+    # 軸ラベルが文字列になる時は，少し特殊なので最後に記述
+    if ("object" in y_type) :
+        # "object" の時，おそらく多くの場合stringに該当する
+        # 文字列をtickのラベルにするときは formatter は特に意味はなく，FixedLocatorを使いラベルを渡す
+        
+        labels = data.get_y_labels()
+        ax.yaxis.set_major_formatter(ticker.FixedFormatter(labels))
+        ax.yaxis.set_minor_locator(ticker.NullLocator()) # minor tickを表示しない
+        # ax.yaxis.set_minor_locator(ticker.AutoLocator())
+        # major tick
+        ax.yaxis.set_major_locator(ticker.LinearLocator(len(labels)))
+        # ax.yaxis.set_major_locator(ticker.MaxNLocator(len(labels)))
+        # ax.yaxis.set_major_locator(ticker.IndexLocator(len(labels), 1))
+        # ax.yaxis.set_major_locator(ticker.AutoLocator())
+        # ax.set_yticklabels(labels)
+
+    # もし locator が渡されていたら，上書きで設定する
+    # locator により目盛りの「位置」や「数」を決められる
+    # minor locator は小さい目盛りのことを表し
+    # major locator は大きい目盛りを表す
+    if minor_locator is not None:
+        ax.yaxis.set_minor_locator(minor_locator)
+
+    if major_locator is not None:
+        ax.yaxis.set_major_locator(major_locator)
+        
+    # サイズの設定はあえてしない．イラレで調整する
+    ax.set_xlabel(data.yaxis)
+    ax.tick_params(axis='y', width=0.5)
+    
+    ax.set(**props)
+    
+    return
+
+def arrange_xaxis(ax: "axes", data: Data,
+                  formatter: matplotlib.ticker.Formatter = None,
+                  major_locator: matplotlib.ticker.Locator = None,
+                  minor_locator: matplotlib.ticker.Locator = None,
+                  tick_interval = None,
+                  **props) :
+    """
+    # x軸の設定をする
+    # ラベルの表記
+    # Tickの数
+    """
+    
+    # formatter により目盛りのラベルの「見た目」を決める
+    # データの型によって自動的に変更する
+    x_type = data.get_xaxis_type()
+    if ("int" in x_type) :
+        # int 型のデータの場合
+        print("set [int] xaxis formatter")
+        ax.xaxis.set_major_formatter(ticker.FormatStrFormatter('%d'))
+        
+        if tick_interval :
+            ax.yaxis.set_minor_locator(ticker.AutoMinorLocator())
+            ax.yaxis.set_major_locator(ticker.MultipleLocator(tick_interval))
+        else :
+            ax.yaxis.set_minor_locator(ticker.AutoMinorLocator())
+            ax.yaxis.set_major_locator(ticker.AutoLocator())
+        
+    if ("float" in x_type) :
+        ax.xaxis.set_major_formatter(ticker.FormatStrFormatter('%.3f'))
+        
+        if tick_interval :
+            ax.yaxis.set_minor_locator(ticker.AutoMinorLocator())
+            ax.yaxis.set_major_locator(ticker.MultipleLocator(tick_interval))
+        else :
+            ax.yaxis.set_minor_locator(ticker.AutoMinorLocator())
+            ax.yaxis.set_major_locator(ticker.AutoLocator())
+    
+    
+    # 軸ラベルが文字列になる時は，少し特殊なので別途記述
+    if ("object" in x_type) :
+        print("set [object] xaxis formatter")
+        # "object" の時，おそらく多くの場合stringに該当する
+        # 文字列をtickのラベルにするときは formatter は特に意味はなく，FixedLocatorを使いラベルを渡す
+        labels = data.get_x_labels()
+        ax.xaxis.set_major_formatter(ticker.FixedFormatter(labels)) # とりあえず整数
+        ax.xaxis.set_minor_locator(ticker.NullLocator())
+        # ax.xaxis.set_major_locator(ticker.FixedLocator(labels))
+        # ax.set_xticklabels(labels)
+        
+        
+    # もし locator が渡されていたら，上書きで設定する
+    # locator により目盛りの「位置」や「数」を決められる
+    # minor locator は小さい目盛りのことを表し
+    # major locator は大きい目盛りを表す
+    # 細かく tick の数を指定したければ，自分で設定できるようにする
+    if minor_locator is not None:
+        ax.xaxis.set_minor_locator(minor_locator)
+
+    if major_locator is not None:
+        ax.xaxis.set_major_locator(major_locator)
+
+    if formatter is not None:
+        ax.xaxis.set_major_formatter(formatter)
+
+    # サイズの設定はあえてしない．イラレで調整する
+    ax.set_xlabel(data.xaxis)
+    ax.tick_params(axis='x', width=0.5)
+    
+    ax.set(**props)
+    
+    return
+    
+
+def set_axes_params(fig: plt.figure, ax: "axes",
                    **props) :
-    """軸の設定を行う関数
+    """軸の設定を行う関数 (-> 軸ごとに分割)
     * 枠線やグリッド，フォントサイズ，locatorやtickerをプロットした後に調整する
     """
-    ax.yaxis.set_major_formatter(plt.FormatStrFormatter('%.1f'))
-    if ymaj_ticker is not None:
-        ax.yaxis.set_major_locator(ymaj_ticker)
-    else:
-        ax.yaxis.set_major_locator(ticker.AutoLocator())
-
-    if ymin_ticker is not None:
-        ax.yaxis.set_minor_locator(ymin_ticker)
-    else:
-        ax.yaxis.set_minor_locator(ticker.AutoMinorLocator())
-
-    # TODO: ticker を渡すようにして設定できるようにする．
-    ax.xaxis.set_major_formatter(plt.FormatStrFormatter('%.1f'))
-#         ax.xaxis.set_major_locator(ticker.MultipleLocator(2))
-#         ax.xaxis.set_minor_locator(ticker.MultipleLocator(1))
-    if xmin_ticker is not None:
-        ax.xaxis.set_minor_locator(xmin_ticker)
-    else:
-        ax.xaxis.set_minor_locator(ticker.AutoMinorLocator())
-
-    if xmaj_ticker is not None:
-        ax.xaxis.set_major_locator(xmaj_ticker)
-    else:
-        ax.xaxis.set_major_locator(ticker.AutoLocator())
-
-    if xtick_label:
-        ax.xaxis.set_major_locator(ticker.FixedLocator(xtick_label))
-#         ax.xaxis.set_major_locator(ticker.MaxNLocator(len(xtick_label)))
-    if ytick_label:
-        ax.yaxis.set_major_locator(ticker.FixedLocator(ytick_label))
-#         ax.yaxis.set_major_locator(ticker.MaxNLocator(len(ytick_label)))
-
-    if xmajtick_num:
-        ax.xaxis.set_major_locator(ticker.LinearLocator(xmajtick_num))
-    if ymajtick_num:
-        ax.yaxis.set_major_locator(ticker.LinearLocator(ymajtick_num))
-    
-    if xmintick_num:
-        ax.xaxis.set_minor_locator(ticker.LinearLocator(xmintick_num))
-    if ymintick_num:
-        ax.yaxis.set_minor_locator(ticker.LinearLocator(ymintick_num))
-
-    # ticker がずれるときは手動で設定すると上手くいく時がある
-#         ax.set_xticks(np.arange(xrange[0], xrange[1]+xrange[2], xrange[2]))
-#         ax.set_yticks(np.arange(yrange[0], yrange[1]+yrange[2], yrange[2]))
-#         ax.set_yticks(np.arange(yrange[0], yrange[1]+yrange[2], yrange[2]/2), minor=True)
-
-    # TODO: label サイズとかは設定を分けたほうがいい
-    ax.tick_params(axis='x', labelsize=ticklabelsize, width=0.5)
-    ax.tick_params(axis='y', labelsize=ticklabelsize, width=0.5)
-    ax.set_xlabel(xlabel, fontsize=labelsize)
-    ax.set_ylabel(ylabel, fontsize=labelsize)
-    ax.set(**props)
-
-    # 余白の設定
-    margin=[0.075, 0.95, 0.20, 1]
-    fig.subplots_adjust(left=margin[0], right=margin[1], bottom=margin[2], top=margin[3])
+    print("this method is not used currently")
 
     return
 
 
-def plot_data(ax: matplotlib.axes.SubplotBase, x: list, datas: list, labels: list = None, **props) :
+def plot_data(ax: "Axes", x: list, datas: list, labels: list = None, **props) :
     """データを直線でプロットしていく関数
     """
     for i in range(0, len(datas)) :
@@ -206,7 +291,7 @@ def plot_data(ax: matplotlib.axes.SubplotBase, x: list, datas: list, labels: lis
     return
 
 # TODO: hatch の取り扱い (どうしても引数が多くなる)
-def fill_between(ax: matplotlib.axes.SubplotBase, x: list, upper_edge: list, lower_edge: list, hatch_fill: bool = None, **props) :
+def fill_between(ax: "axes", x: list, upper_edge: list, lower_edge: list, hatch_fill: bool = None, **props) :
     """指定領域を塗りつぶす関数
     """
     hatches = cycle(["/", "\\"])
@@ -221,7 +306,7 @@ def fill_between(ax: matplotlib.axes.SubplotBase, x: list, upper_edge: list, low
         else :
             ax.fill_between(x, upper_edge, lower_edge, **_p)
 
-def bar(ax: matplotlib.axes.SubplotBase, x_pos: list, y: list, sd: list = None, vertical: bool = True, **props) :
+def bar(ax: "axes", data: Data, vertical: bool = True, **props) :
     """棒グラフをプロットする関数
     エラーバーも設定できるようにすべきか
     縦棒グラフの幅を設定する時は "width", 横棒グラフの幅を設定する時は "height"
@@ -229,23 +314,41 @@ def bar(ax: matplotlib.axes.SubplotBase, x_pos: list, y: list, sd: list = None, 
     """
 
     _default_props = {
-        "width": 0.6,
+        # "width": 0.6, # seaborn に渡すとエラーになる
         "linewidth": 0.5,
-        "align": "center",
+        # "align": "center", # seaborn に渡すとエラーになる
         "edgecolor": "black",
-        "color": "white"
+        # "color": "white",
+        "errwidth": 0.5,
+        "capsize": 0.2,
     }
     _props = {**_default_props, **props}
-    
-    if (vertical) :
-        ax.bar(x_pos, y, **_props)
+    _orient = "v"
+    if not vertical:
+        # TODO: ticklabelの配置が上手くいかない
+        _orient = "h"
+
+    if data.col :
+        sns.catplot(
+            x=data.xaxis, y=data.yaxis, hue=data.hue, col=data.col,
+            data=data.get_data(),
+            kind="bar",
+            **_props
+        )
     else :
-        ax.barh(x_pos, y, **props)
+        sns.barplot(
+            x=data.xaxis, y=data.yaxis, hue=data.hue,
+            data=data.get_data(), ax=ax,
+            orient=_orient,
+            **_props
+        )
+
     return
 
-def errorbar(ax: matplotlib.axes.SubplotBase, xpos: list, y: list, yerr: list, **props) :
+def errorbar(ax: "axes", data: Data, **props) :
     """エラーバーを別途プロットする関数
     x, y座標が必要になるので二度手間ではある
+    デフォルトで不偏標準偏差をプロットする
     """
     _default_props = {
         "fmt": "none",
@@ -256,10 +359,11 @@ def errorbar(ax: matplotlib.axes.SubplotBase, xpos: list, y: list, yerr: list, *
         "alpha": 0.85
     }
     _p = {**_default_props, **props}
-    ax.errorbar(x_pos, y, yerr=sd, **_p)
+    labels, std = data.y_std_each_label()
+    ax.errorbar(labels, std, **_p)
 
 
-def scatter(ax: matplotlib.axes.SubplotBase, x: list, y: list, **props) :
+def scatter(ax: "axes", x: list, y: list, **props) :
     """散布図をプロットする関数
     color や marker の候補を記載しておく
     """
@@ -288,7 +392,7 @@ def scatter(ax: matplotlib.axes.SubplotBase, x: list, y: list, **props) :
 
     return
 
-def regression(ax: matplotlib.axes.SubplotBase, x: list, y: list, **props) :
+def regression(ax: "axes", x: list, y: list, **props) :
     """回帰直線をプロットする関数
     # データに対して回帰直線を引く関数. scatter との併用を想定
     # データは二次元配列で渡す
@@ -314,7 +418,7 @@ def regression(ax: matplotlib.axes.SubplotBase, x: list, y: list, **props) :
     ax.plot(X, reg.predict(X), **_p)
     return
 
-def boxplot(ax: matplotlib.axes.SubplotBase, tdata: list, pattern_label=None, **props) :
+def boxplot(ax: "axes", tdata: list, pattern_label=None, **props) :
     """箱ひげ図をプロットする関数
     meanpointprops: 平均値を表す点のプロパティ
     meanlineprops: 平均値を線で表す時のプロパティ
@@ -347,11 +451,15 @@ def boxplot(ax: matplotlib.axes.SubplotBase, tdata: list, pattern_label=None, **
     return
 
 
-def display_process() :
+def display_process(fig) :
     """グラフを表示する処理
     難しいことはしていないが，tight_layout() を呼ぶようにしている
     jupyter を利用する場合は利用しなくてもグラフを表示可能
     """
+    # 余白の設定
+    margin=[0.075, 0.95, 0.20, 1]
+    fig.subplots_adjust(left=margin[0], right=margin[1], bottom=margin[2], top=margin[3])
+
     plt.show()
     plt.tight_layout()
     return
